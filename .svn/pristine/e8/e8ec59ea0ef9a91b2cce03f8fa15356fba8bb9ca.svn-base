@@ -1,0 +1,87 @@
+/*
+ * Author : Nidhi Tyagi (NT)
+ * email : nityagi@cs.wisc.edu
+ * Project : VidyaMap @ Compass Group, WCER
+ */
+
+package vidyamap.logUpdate;
+
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
+import vidyamap.dao.DatabaseConnector;
+import vidyamap.dao.DatabaseConnectorExt;
+
+public class insertEntry {
+static insertEntry e = null;
+
+    public static insertEntry getInstance(){ 
+        if(e != null){
+            return e;
+        }
+        e = new insertEntry();
+        return e;
+    }
+    
+    private insertEntry() {
+        
+    }
+    
+    
+    static void log(Object o) {
+        System.out.println(o.toString());
+    }
+
+    public String addData(String req) {
+        //Get the keywords and insert them into the log table
+        try {
+            //Create the insertion query
+            String query = createQuery(req);
+            
+            //Execute db query to make an entry
+            executeQuery(query);
+            
+            //Close connection
+            DatabaseConnector.closeConnection();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    private void executeQuery(String query) {
+        try {
+            //Make an entry into DB
+            log("Making an entry for string" + query);
+            
+            //Execute the query to insert data
+            DatabaseConnectorExt.executeLogUpdateQuery(query);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }    
+    }
+    
+    private String createQuery(String req) {
+        try {
+            log("Formatting the query: " + req);
+            
+            //First lets format the date for time stamp entry
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date date = new Date();
+            String timestamp = dateFormat.format(date.getTime());
+            log(date);
+                        
+            //This is the query for insertion
+            String query = "INSERT INTO exploration (student_id, group_id, time, question)"+" VALUES ( 11, 11, '"+ timestamp+"', '"+req+"'"+")" ; 
+            
+            return query;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+}

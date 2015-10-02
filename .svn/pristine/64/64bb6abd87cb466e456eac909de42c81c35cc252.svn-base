@@ -1,0 +1,49 @@
+package vidyamap.rest;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import vidyamap.core.MeaningExtractor;
+import vidyamap.core.MeaningExtractorImpl;
+import vidyamap.parser.SearchRequest;
+
+@Path("/search")
+public class Search {
+
+	@POST
+    @Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+    public String postSearch(String req) {
+		//TODO Need to do wiring
+		
+		/*ObjectMapper mapper = new ObjectMapper();
+		try {
+			SearchRequest srchReq = mapper.readValue(req, SearchRequest.class);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+		
+		SearchRequest srchReq = new SearchRequest();
+		srchReq.setSearchString(req);
+		MeaningExtractor m = MeaningExtractorImpl.getInstance();
+		String response = m.extractMeaning(srchReq);
+		
+        return response;
+    }
+	
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+    public String getSearch(String req) {
+		//TODO Need to do wiring
+        return postSearch(req);
+    }
+
+	static void log(Object o) {
+		System.out.println(o.toString());
+	}
+}

@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+
+	<!-- General meta information -->
+	<title>VidyaMap</title>
+	<meta name="keywords" content="" />
+	<meta name="description" content="" />
+	<meta name="robots" content="index, follow" />
+	<meta charset="utf-8" />
+	<!-- // General meta information -->
+	
+	
+	<!-- Load Javascript -->
+	<script type="text/javascript" src="../js/jquery-1.11.2.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-ui-1.11.4.min.js"></script>
+	<script type="text/javascript" src="../js/signup.js"></script>
+	<!-- // Load Javascipt -->
+
+	<!-- Load stylesheets -->
+	<link type="text/css" rel="stylesheet" href="../css/signup.css"/>
+	<!-- // Load stylesheets -->
+	
+
+	<script>
+	</script>
+	
+</head>
+<body>
+
+	 <div class="main">
+      <div class="one">
+        <div class="register">
+          <h3>Create your account</h3>
+          <button type="button" onclick="window.location ='main.html'" style="float:right">Continue</button>	
+          <form id="reg-form" action="r/signup" method="post">
+            <div>
+              <label for="firstname">First Name</label>
+              <input type="text" name="firstname" id="firstname" spellcheck="false" placeholder="First Name" required/>              
+              <label for="lastname">Last Name</label>
+              <input type="text" name="lastname" id="lastname" spellcheck="false" placeholder="Last Name" required/>
+            </div>            
+            <div>
+              <label for="teacher">Teacher</label>
+              <input type="text" name="teacher" id="teacher" spellcheck="false" placeholder="Teacher's Name" required/> 
+            </div>
+            <div>             
+              <label for="school">School</label>
+              <input type="text" name="school" id="school" spellcheck="false" placeholder="School Name" required/>
+            </div>
+            <div>
+              <label for="class">Class</label>
+              <input type="text" name="class" id="class" spellcheck="false" placeholder="Class" required/>
+            </div>
+            <div>
+              <label for="username">Username</label>
+              <input type="text" name="username" id="username" spellcheck="false" placeholder="username" required/>
+            </div>
+            <div>
+              <label for="password">Password</label>
+              <input name="password" type="password" id="password" />
+            </div>
+            <div>
+              <label for="password-again">Password Again</label>
+              <input type="password" id="password-again" oninput="match(this)"/>
+            </div>
+            <div>
+              <label></label>
+              <input type="submit" value="Create Account" id="create-account" class="button"/>
+            </div>
+          </form>
+        </div>
+      </div>
+     </div>
+</body>
+</html>

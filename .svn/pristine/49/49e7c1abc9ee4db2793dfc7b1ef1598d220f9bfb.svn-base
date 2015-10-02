@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+
+	<!-- General meta information -->
+	<title>VidyaMap</title>
+	<meta name="keywords" content="" />
+	<meta name="description" content="" />
+	<meta name="robots" content="index, follow" />
+	<meta charset="utf-8" />
+	<!-- // General meta information -->
+	
+	
+	<!-- Load Javascript -->
+	<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+	<script type="text/javascript" src="js/jquery-ui-1.11.4.min.js"></script>
+	<script type="text/javascript" src="js/signin.js"></script>
+	<!-- // Load Javascipt -->
+
+	<!-- Load stylesheets -->
+	<link type="text/css" rel="stylesheet" href="css/login.css"/>
+	<!-- // Load stylesheets -->
+	
+
+	<script>
+	</script>
+	
+</head>
+<body>
+
+	 <div class="main">
+	 
+          <h3>VidyaMap Login</h3>
+          
+          <form id="login" action="r/signin" method="post">
+            <div>
+              <label for="username">Username</label>
+              <input type="text" name="username" id="username" value="Username" onclick="this.value = ''" required> 
+            </div>            
+            <div>             
+              <label for="password">Password</label>
+              <input type="password" name="password" id="password" value="Password" onclick="this.value = ''" required>
+            </div>  
+            
+            <div>
+				<input type="submit" id="submit1" value="Sign In">
+			</div>
+
+
+			<div>
+
+			<a href="#">Forgot your Password?</a>
+
+			</div>          
+          </form>
+          
+     </div>
+</body>
+</html>

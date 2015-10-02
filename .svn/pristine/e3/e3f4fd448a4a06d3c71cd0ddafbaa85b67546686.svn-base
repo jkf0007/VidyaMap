@@ -1,0 +1,288 @@
+package vidyamap.rest;
+
+import java.math.BigInteger;
+import java.net.URI;
+//import java.util.UUID; 
+// For password hashing
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+
+import vidyamap.dao.DatabaseConnectorExt;
+
+@Path("/")
+public class UserHandler {
+
+	@Context
+	private HttpServletRequest request;
+	@Context
+	private HttpServletResponse response;
+
+	@Path("signout")
+	public Response signOut() {
+		log("SignOut");
+		HttpSession session = request.getSession(false);
+		if(session != null){
+			session.invalidate();
+		}
+		URI uri = UriBuilder.fromUri("../index.html").build();
+	    return Response.temporaryRedirect(uri).build();
+	}
+
+	@Path("signin")
+	@POST
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response signIn(@FormParam("username") String username,
+			@FormParam("password") String password) {
+		log("SignIn");
+		if (username.trim().length() > 0 && password.trim().length() > 0) {
+			log("got in");
+			// Query the database with the username provided
+			String query = "SELECT password,salt,privilege_level FROM user WHERE login_id='"
+					+ username + "'";
+
+			try {
+				List<String> list = DatabaseConnectorExt.getUserPassword(query);
+				URI uri;
+				// if the result set is not null -> user exists
+				if (!list.isEmpty()) {
+					// Authenticate password here
+					log("Going to compare passwords");
+					if (authenticate(password, fromHex(list.get(0)),
+							fromHex(list.get(1)))) {
+						 log("password match");
+						HttpSession session = request.getSession();
+						session.setAttribute("username", username);
+						if (Integer.parseInt(list.get(2)) >= 2) { // 2 or above privilege level are for admin
+							uri = UriBuilder.fromUri("../html/signup.html").build();
+						} else {
+							uri = UriBuilder.fromUri("../html/main.html").build();
+						}
+						return Response.temporaryRedirect(uri).build();
+					} else {
+						log("password dont match");
+						uri = UriBuilder.fromUri("../index.html").build();
+						return Response.temporaryRedirect(uri).build();
+					}
+				} else {
+					throw new Exception("DB result set is empty");
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			} catch (InvalidKeySpecException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+	}
+
+	/*@Path("signup")
+	@POST
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response signUp(@FormParam("firstname") String firstname,
+			@FormParam("lastname") String lastname,
+			@FormParam("username") String username,
+			@FormParam("password") String password) {
+		log("SignUp");
+		if (firstname.trim().length() > 0 && lastname.trim().length() > 0
+				&& username.trim().length() > 0 && password.trim().length() > 0) {
+			byte[] salt = new byte[8];
+			byte[] encryptedPassword = new byte[160];
+			String saltStr = new String();
+			String encryptPassStr = new String();
+			// Generate the salt for encrypting password
+			try {
+				salt = generateSalt();
+				encryptedPassword = getEncryptedPassword(password, salt);
+				saltStr = toHex(salt);
+				encryptPassStr = toHex(encryptedPassword);
+				// log("sal and password: "+saltStr+" "+encryptPassStr);
+
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			} catch (InvalidKeySpecException e) {
+				e.printStackTrace();
+			}
+
+			// Insert new user information into the database
+			// user_type is currently going to hold the salt for us
+			String query = "INSERT INTO user (first_name, last_name, login_id, salt, password) VALUES ('"
+					+ firstname
+					+ "','"
+					+ lastname
+					+ "','"
+					+ username
+					+ "','"
+					+ saltStr + "','" + encryptPassStr + "')";
+			boolean success = true;
+
+			try {
+				success = DatabaseConnectorExt.executeUpdateQuery(query);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+			// if both are correct buffer the main page with username and
+			// display
+			if (success) {
+				//URI uri = UriBuilder.fromUri("../html/main.html").build();
+				return Response.ok().build();
+			} else {
+				//URI uri = UriBuilder.fromUri("../html/register.html").build();
+				return Response.serverError().build();
+			}
+		}
+		return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+	}*/
+	
+	public boolean signUp(String firstname,
+			String lastname,
+			String username,
+			String password) {
+		log("SignUp");
+		if (firstname.trim().length() > 0 && lastname.trim().length() > 0
+				&& username.trim().length() > 0 && password.trim().length() > 0) {
+			byte[] salt = new byte[8];
+			byte[] encryptedPassword = new byte[160];
+			String saltStr = new String();
+			String encryptPassStr = new String();
+			// Generate the salt for encrypting password
+			try {
+				salt = generateSalt();
+				encryptedPassword = getEncryptedPassword(password, salt);
+				saltStr = toHex(salt);
+				encryptPassStr = toHex(encryptedPassword);
+				// log("sal and password: "+saltStr+" "+encryptPassStr);
+
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			} catch (InvalidKeySpecException e) {
+				e.printStackTrace();
+			}
+
+			// Insert new user information into the database
+			// user_type is currently going to hold the salt for us
+			String query = "INSERT INTO user (first_name, last_name, login_id, salt, password) VALUES ('"
+					+ firstname
+					+ "','"
+					+ lastname
+					+ "','"
+					+ username
+					+ "','"
+					+ saltStr + "','" + encryptPassStr + "')";
+			boolean success = true;
+
+			try {
+				success = DatabaseConnectorExt.executeUpdateQuery(query);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+			if (success) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return false;
+	}
+
+	@Path("username")
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	public boolean username(String username) {
+
+		boolean success = true;
+		log("finding username: " + username);
+
+		// Insert new user information into the database
+		String query = "SELECT login_id FROM user WHERE login_id='" + username
+				+ "'";
+
+		try {
+			success = DatabaseConnectorExt.UsernameExists(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		if (success)
+			log("success is true");
+		return success;
+	}
+	
+	// Password handling functions
+	private byte[] generateSalt() throws NoSuchAlgorithmException {
+		SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+		// Generate a 8 byte (64 bit) salt as recommended by RSA PKCS5
+		byte[] salt = new byte[8];
+		random.nextBytes(salt);
+		return salt;
+	}
+
+	public byte[] getEncryptedPassword(String password, byte[] salt)
+			throws NoSuchAlgorithmException, InvalidKeySpecException {
+		String algorithm = "PBKDF2WithHmacSHA1";
+		int derivedKeyLength = 160;
+		int iterations = 20000;
+
+		KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations,
+				derivedKeyLength);
+		SecretKeyFactory f = SecretKeyFactory.getInstance(algorithm);
+		return f.generateSecret(spec).getEncoded();
+	}
+
+	public boolean authenticate(String attemptedPassword,
+			byte[] encryptedPassword, byte[] salt)
+			throws NoSuchAlgorithmException, InvalidKeySpecException {
+		byte[] encryptedAttemptedPassword = getEncryptedPassword(
+				attemptedPassword, salt);
+		// log("trying authentication compare");
+		return Arrays.equals(encryptedPassword, encryptedAttemptedPassword);
+	}
+
+	private static byte[] fromHex(String hex) {
+		byte[] binary = new byte[hex.length() / 2];
+		for (int i = 0; i < binary.length; i++) {
+			binary[i] = (byte) Integer.parseInt(
+					hex.substring(2 * i, 2 * i + 2), 16);
+		}
+		return binary;
+	}
+
+	private static String toHex(byte[] array) {
+		BigInteger bi = new BigInteger(1, array);
+		String hex = bi.toString(16);
+		int paddingLength = (array.length * 2) - hex.length();
+		if (paddingLength > 0)
+			return String.format("%0" + paddingLength + "d", 0) + hex;
+		else
+			return hex;
+	}
+
+	static void log(Object o) {
+		System.out.println(o.toString());
+	}
+}

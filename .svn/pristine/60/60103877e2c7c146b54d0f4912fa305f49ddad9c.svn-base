@@ -1,0 +1,96 @@
+/*
+ * Author : Nidhi Tyagi (NT)
+ * email : nityagi@cs.wisc.edu
+ * Project : VidyaMap @ Compass Group, WCER
+ */
+
+package vidyamap.logAnalyze;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import vidyamap.dao.DatabaseConnector;
+import vidyamap.dao.DatabaseConnectorExt;
+import vidyamap.parser.LogFormat;
+
+public class fetchEntry {
+    static fetchEntry f = null;
+    private List<HashMap<String, Object>> LogList = new ArrayList<HashMap<String,Object>>();
+    private List<String> UserData = new ArrayList<String>();
+
+    public static fetchEntry getInstance(){ 
+        if(f != null){
+            return f;
+        }
+        f = new fetchEntry();
+        return f;
+    }
+    
+    private fetchEntry() {
+        
+    }
+    
+    
+    static void log(Object o) {
+        System.out.println(o.toString());
+    }
+
+    public String fetchData(String req) {
+        try {
+            LogList.clear();
+            UserData.clear();
+            //Create the insertion query
+            String query = createQuery(req);
+            
+            //Execute db query to make an entry
+            executeQuery(query);
+            
+            //Close connection
+            DatabaseConnector.closeConnection();
+            
+            //Format the logs into a JSON to be used at the client end
+            LogFormat f = new LogFormat();
+            f.addUserData(UserData);
+            return f.convertToJson(LogList);          
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    private void executeQuery(String query) {
+        try {
+            //Make an entry into DB
+            log("Making an entry for string" + query);
+            
+            //Execute the query to insert data
+            LogList = DatabaseConnectorExt.executeLogFetchQuery(query);
+            if(LogList.size() > 0){
+                HashMap<String, Object> Log = LogList.get(0);
+                String Data = (String)Log.get("student_id");
+                UserData.add(Data);                
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }    
+    }
+    
+    private String createQuery(String req) {
+        try {
+            log("Formatting the query: " + req);
+                        
+            //This is the query for insertion
+            String query = "SELECT * FROM exploration where student_id = '"+11+"'" ; 
+            
+            return query;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+}

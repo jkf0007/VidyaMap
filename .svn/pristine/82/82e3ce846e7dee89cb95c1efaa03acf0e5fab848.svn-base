@@ -1,0 +1,12 @@
+BIOLOGY_NODES = nodes
+BIOLOGY_LINKS = links
+PHYSICS_NODES = nodes_phy
+PHYSICS_LINKS = links_phy
+GROUP = group
+SCHOOL = school
+TEACHER = teacher
+STUDENT = student
+GROUP_MEMEBERS = group_members
+CLASS = class
+TERM = term
+USER = user

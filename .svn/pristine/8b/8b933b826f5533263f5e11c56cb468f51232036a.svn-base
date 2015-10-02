@@ -1,0 +1,96 @@
+package vidyamap.core;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import vidyamap.dao.DatabaseConnector;
+import vidyamap.parser.SearchRequest;
+import vidyamap.parser.SearchResponse;
+
+public class MeaningExtractorImpl implements MeaningExtractor {
+	static MeaningExtractorImpl m = null;
+	
+	private Set<NodeMap<String, Object>> masterSetNodes = new HashSet<NodeMap<String, Object>>();
+	private List<Map<String, Object>> masterListLinks = new ArrayList<Map<String,Object>>();
+	
+	public static MeaningExtractorImpl getInstance(){ 
+		if(m != null){
+			return m;
+		}
+		m = new MeaningExtractorImpl();
+		return m;
+	}
+	
+	private MeaningExtractorImpl() {
+		
+	}
+	
+	
+	static void log(Object o) {
+		System.out.println(o.toString());
+	}
+
+	@Override
+	public String extractMeaning(SearchRequest req) {
+		//Get keywords and query database
+		try {
+			String meaning = req.getSearchString();
+			int numLevels = 2;
+			masterSetNodes.clear();
+			masterListLinks.clear();
+			String [] str = meaning.split(" ");
+			for(String s : str){
+				numLevels = executeQuery(s, numLevels);
+			}
+			//Close connection
+			DatabaseConnector.closeConnection();
+			//Return response
+			SearchResponse response = new SearchResponse();
+			return response.convertToJson(masterSetNodes, masterListLinks);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private int executeQuery(String meaning, int numLevels) {
+		try {
+			//Getting nodes
+			log("Meaning::::::" + meaning);
+			String query = "SELECT * FROM nodes where name = " + "'"+meaning+"'";
+			Set<NodeMap<String, Object>> nodes = DatabaseConnector.executeNodesQuery(query);
+			if(nodes.size() > 0){
+				masterSetNodes.addAll(nodes);
+				recurse(nodes, --numLevels);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return numLevels;		
+	}
+
+	private Set<NodeMap<String, Object>> recurse(Set<NodeMap<String, Object>> nodes, int numLevels) throws Exception {
+		if(numLevels >= 0){
+			Set<NodeMap<String, Object>> nodesAtLevel = new HashSet<NodeMap<String,Object>>();
+			for (NodeMap<String, Object> m1 : nodes) {
+				String nodeId = m1.get("id").toString();
+				log("id::::::" + nodeId);
+				// Getting links
+				String query = "SELECT * from links where source = " + "'"+nodeId+"'";
+				List<Map<String, Object>> links = DatabaseConnector.executeLinksQuery(query);
+				masterListLinks.addAll(links);
+				for (Map<String, Object> m : links) {
+					String target = m.get("target").toString();
+					query = "SELECT * from nodes where id = " + "'"+target+"'";
+					nodesAtLevel.addAll(DatabaseConnector.executeNodesQuery(query));
+				}
+			}
+			masterSetNodes.addAll(nodesAtLevel);
+			return recurse(nodesAtLevel, --numLevels);
+		}
+		return masterSetNodes;
+	}
+}

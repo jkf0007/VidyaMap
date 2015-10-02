@@ -1,0 +1,173 @@
+/**
+ * signup handling
+ */
+
+$(document).ready(function(){
+	
+    $(".schoolregister").hide();
+    $(".teacherregister").hide();
+    $(".studentregister").hide();
+    $(".classregister").hide();
+    $(".groupregister").hide();
+    $(".termregister").hide();
+    $("#mySelect").change(function(){
+        $( "select option:selected").each(function(){
+            if($(this).attr("value")=="school"){
+                $(".schoolregister").show();
+                $(".teacherregister").hide();
+                $(".studentregister").hide();
+                $(".classregister").hide();
+                $(".groupregister").hide();
+                $(".termregister").hide();
+            }
+            if($(this).attr("value")=="teacher"){
+                $(".teacherregister").show();
+                
+                $.ajax({
+                    url : "r/getSchools",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $("#schoolSelect");
+                       var nodes = data.split(",");
+                       $.each(nodes, function(item) {
+                           options.append($("<option />").val(item).text(item));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                });
+                
+                
+                $(".schoolregister").hide();
+                $(".studentregister").hide();
+                $(".classregister").hide();
+                $(".groupregister").hide();
+                $(".termregister").hide();
+            }
+            if($(this).attr("value")=="student"){
+                $(".studentregister").show();
+                
+                $.ajax({
+                    url : "r/getSchools",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $("#schoolSelect");
+                       var nodes = data.split(",");
+                       $.each(nodes, function(item) {
+                           options.append($("<option />").val(item).text(item));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                });          
+                
+                $(".schoolregister").hide();
+                $(".teacherregister").hide();
+                $(".classregister").hide();
+                $(".groupregister").hide();
+                $(".termregister").hide();
+            }
+            if($(this).attr("value")=="class"){
+                $(".classregister").show();
+                
+                $.ajax({
+                    url : "r/getTeachers",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $("#teacherSelect");
+                       var nodes = data.split(",");
+                       $.each(nodes, function(item) {
+                           options.append($("<option />").val(item).text(item));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                });
+                
+                $(".schoolregister").hide();
+                $(".teacherregister").hide();
+                $(".studentregister").hide();
+                $(".groupregister").hide();
+                $(".termregister").hide();
+            }
+            if($(this).attr("value")=="group"){
+                $(".groupregister").show();
+                
+                $.ajax({
+                    url : "r/getClasses",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $("#classSelect");
+                       var nodes = data.split(",");
+                       $.each(nodes, function(item) {
+                           options.append($("<option />").val(item).text(item));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                });
+                
+                $(".schoolregister").hide();
+                $(".teacherregister").hide();
+                $(".studentregister").hide();
+                $(".classregister").hide();
+                $(".termregister").hide();
+            }
+            if($(this).attr("value")=="term"){
+                $(".termregister").show();
+                $(".schoolregister").hide();
+                $(".teacherregister").hide();
+                $(".studentregister").hide();
+                $(".classregister").hide();
+                $(".groupregister").hide();
+            }
+        });
+    }).change();
+});
+
+$(document).ready(function(){
+	var placeholder = null;
+	$('input[type=text]').focus(function(){
+	    placeholder = $(this).attr("placeholder");
+	    $(this).attr("placeholder","");
+	});
+	$('input[type=text]').blur(function(){
+		$(this).attr("placeholder", placeholder);
+	});
+});
+
+function match(password) {
+	if (password.value != document.getElementById('password').value) {
+	password.setCustomValidity('Password do not match');
+	} else {
+	// input is valid -- reset the error message
+	password.setCustomValidity('');
+	}
+}
+
+var username = $('#username').val();
+$('#username').onchange(function() {
+   $.ajax({
+      url: "/VidyaMap/r/username",
+      type: 'POST',
+      contentType : 'application/json; charset=utf-8',
+      dataType : 'json',      
+      data: username,
+      success: function(result){
+                 if(result != 0){
+                     // do something if username already exist
+                	 console.log("username exists");
+                	 $('#username').setCustomValidity('Username already exists');
+                 }
+                 else{
+                	 console.log("username can be created");
+                	 $('#username').setCustomValidity('Username new');
+                     // do something if username doesn't exist
+                 }
+               }
+      });
+});

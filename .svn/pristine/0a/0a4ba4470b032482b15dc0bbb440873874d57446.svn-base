@@ -1,0 +1,4 @@
+BIOLOGY_NODES = nodes
+BIOLOGY_LINKS = links
+PHYSICS_NODES = nodes_phy
+PHYSICS_LINKS = links_phy

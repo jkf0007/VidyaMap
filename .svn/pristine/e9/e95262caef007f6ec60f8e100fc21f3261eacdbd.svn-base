@@ -1,0 +1,46 @@
+/*
+ * Project : VidyaMap @ Compass Group, WCER
+ * Author : Nidhi Tyagi (NT)
+ * email : nityagi@cs.wisc.edu
+ */
+
+package vidyamap.rest;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import vidyamap.logAnalyze.fetchEntry;
+
+@Path("/")
+public class Analysis {
+
+    @Path("analysis")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String postQuery(String req) {
+        
+        // NT - Code to fetch the logs from DB
+        log("postquery search");
+        fetchEntry e = fetchEntry.getInstance();
+        String response  = e.fetchData(req);
+            
+        return response;
+    }
+    
+    @Path("analysis")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public String postAnalysis(String req) {            
+        return postQuery(req);
+    }
+    
+    static void log(Object o) {
+        System.out.println(o.toString());
+    }
+}
+

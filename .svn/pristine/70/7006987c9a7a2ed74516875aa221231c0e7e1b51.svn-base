@@ -1,0 +1,166 @@
+package vidyamap.core;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import vidyamap.dao.DatabaseConnector;
+import vidyamap.parser.SearchRequest;
+import vidyamap.parser.SearchResponse;
+
+public class MeaningExtractorImpl implements MeaningExtractor {
+	static MeaningExtractorImpl m = null;
+	
+	private Set<NodeMap<String, Object>> masterSetNodes = new HashSet<NodeMap<String, Object>>();
+	private List<Map<String, Object>> masterListLinks = new ArrayList<Map<String,Object>>();
+	
+	public static MeaningExtractorImpl getInstance(){ 
+		if(m != null){
+			return m;
+		}
+		m = new MeaningExtractorImpl();
+		return m;
+	}
+	
+	private MeaningExtractorImpl() {
+		
+	}
+	
+	
+	static void log(Object o) {
+		System.out.println(o.toString());
+	}
+
+	@Override
+	public String extractMeaning(SearchRequest req) {
+		//Get keywords and query database
+		try {
+			String meaning = req.getSearchString();
+			return executeQuery(meaning);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/*private String executeQuery(String meaning) {
+		try {
+			//Getting nodes
+			String [] str = meaning.split(" ");
+			List<Map<String, Object>> masterListNodes = new ArrayList<Map<String,Object>>();
+			List<Map<String, Object>> masterListLinks = new ArrayList<Map<String,Object>>();
+			List<String> duplicateChecker = new ArrayList<String>();
+			for(String s : str){
+				log("Keyword::::::" + s);
+				List<Map<String, Object>> nodes = DatabaseConnector.executeQuery(s,"nodes");
+				for(Map<String, Object> m1 : nodes){
+					String nodeId = m1.get("id").toString();
+					if(!duplicateChecker.contains(nodeId)){
+						duplicateChecker.add(nodeId);
+						masterListNodes.add(m1);
+						log("id::::::" + nodeId);
+						//Getting links
+						List<Map<String, Object>> links = DatabaseConnector.executeQuery(nodeId,"links");
+						for(Map<String, Object> m : links){
+							String target = m.get("target").toString();
+							List<Map<String, Object>> nodes1 = DatabaseConnector.executeQueryWithId(target,"nodes");
+							if(nodes1 != null && nodes1.size() > 0){
+								//Check for duplicates
+								Map<String, Object> node = nodes1.get(0);
+								nodeId = node.get("id").toString();
+								if(!duplicateChecker.contains(nodeId)){
+									duplicateChecker.add(nodeId);
+									masterListNodes.add(node);
+								} else {
+									m.put("target", duplicateChecker.indexOf(nodeId));
+								}
+								masterListLinks.add(m);
+							}
+						}
+					}
+				}
+			}
+			SearchResponse response = new SearchResponse();
+			return response.convertToJson(masterListNodes, masterListLinks);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;		
+	}*/
+	
+	private String executeQuery(String meaning) {
+		try {
+			//Getting nodes
+			int numLevels = 2;
+			String [] str = meaning.split(" ");
+			for(String s : str){
+				log("Keyword::::::" + s);
+				String query = "SELECT * FROM nodes where name = " + "'"+s+"'";
+				Set<NodeMap<String, Object>> nodes = DatabaseConnector.executeNodesQuery(query);
+				masterSetNodes.addAll(nodes);
+				recurse(nodes, --numLevels);
+			}
+			SearchResponse response = new SearchResponse();
+			return response.convertToJson(masterSetNodes, masterListLinks);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;		
+	}
+
+	private Set<NodeMap<String, Object>> recurse(Set<NodeMap<String, Object>> nodes, int numLevels) throws Exception {
+		if(numLevels >= 0){
+			Set<NodeMap<String, Object>> nodesAtLevel = new HashSet<NodeMap<String,Object>>();
+			for (NodeMap<String, Object> m1 : nodes) {
+				String nodeId = m1.get("id").toString();
+				log("id::::::" + nodeId);
+				// Getting links
+				String query = "SELECT * from links where source = " + "'"+nodeId+"'";
+				List<Map<String, Object>> links = DatabaseConnector.executeQuery(query);
+				masterListLinks.addAll(links);
+				for (Map<String, Object> m : links) {
+					String target = m.get("target").toString();
+					query = "SELECT * from nodes where id = " + "'"+target+"'";
+					nodesAtLevel.addAll(DatabaseConnector.executeNodesQuery(query));
+				}
+			}
+			masterSetNodes.addAll(nodesAtLevel);
+			return recurse(nodesAtLevel, --numLevels);
+		}
+		return masterSetNodes;
+	}
+	
+	
+	/*private String executeQuery(String meaning) {
+		try {
+			// Getting nodes
+			String[] str = meaning.split(" ");
+			Set<NodeMap<String, Object>> masterSetNodes = new HashSet<NodeMap<String, Object>>();
+			List<Map<String, Object>> masterListLinks = new ArrayList<Map<String, Object>>();
+			for (String s : str) {
+				log("Keyword::::::" + s);
+				String query = "SELECT * FROM nodes where name like " + "'%"+s+"%'"  + " union all "
+						+ "SELECT * FROM nodes where id in ( SELECT target from links where source in" 
+							+ "( SELECT id FROM  (SELECT * FROM nodes where name like " + "'%"+s+"%'"  + ") as a)) union all SELECT * FROM nodes where id in"
+								+"( SELECT target from links where source in (SELECT id FROM ( SELECT * FROM nodes where id in" 
+									+ "( SELECT target from links where source in "
+											+ "( SELECT id FROM(SELECT * FROM nodes where name like " + "'%"+s+"%'"  + ") as c))) as b))"; 
+				Set<NodeMap<String, Object>> nodes = DatabaseConnector.executeNodesQuery(query);
+				masterSetNodes.addAll(nodes);
+				// Getting links
+				query = "SELECT * FROM links where source in (SELECT id FROM nodes where name like " + "'%"+s+"%') union all"
+						+ " SELECT * FROM links where source in ( select target from links where source in"
+						+ "(SELECT id FROM nodes where name like " + "'%"+s+"%'))" ;
+				List<Map<String, Object>> links = DatabaseConnector.executeQuery(query);
+				masterListLinks.addAll(links);
+			}
+			SearchResponse response = new SearchResponse();
+			return response.convertToJson(masterSetNodes, masterListLinks);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}*/
+}

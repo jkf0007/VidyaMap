@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+	<!-- General meta information -->
+	<title>VidyaMap</title>
+	<meta name="keywords" content="" />
+	<meta name="description" content="" />
+	<meta name="robots" content="index, follow" />
+	<meta charset="utf-8" />
+	<!-- // General meta information -->
+	
+	
+	<!-- Load Javascript -->
+	<script type="text/javascript" src="../js/jquery-1.11.2.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-ui-1.11.4.min.js"></script>
+	<!-- // Load Javascipt -->
+
+	<!-- Load stylesheets -->
+	<link type="text/css" rel="stylesheet" href="../css/signup.css"/>
+	<!-- // Load stylesheets -->
+	
+
+	<script>
+	</script>
+</head>
+<body>
+
+		<div class="">         
+          <form id="reg-form" action="/VidyaMap/r/session" method="post">
+            <div>Student info here
+            </div>
+            <div>
+              <label for="physics">Physics</label>
+              <input type="checkbox" name="physics" id="physics" value="physics">              
+              <label for="biology">Biology</label>
+              <input type="checkbox" name="biology" id="biology" value="biology">
+            </div>
+            <div>
+              <label></label>
+              <input type="submit" value="Create Account" id="create-account" class="button"/>
+            </div>
+          </form>
+        </div>
+
+</body>
+</html>

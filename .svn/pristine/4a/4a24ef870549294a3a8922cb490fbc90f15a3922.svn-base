@@ -1,0 +1,150 @@
+/**
+ * signup handling
+ */
+
+$(document).ready(function(){
+    $("#mySelect").change(function(){
+        $( "select option:selected").each(function(){
+        	 if($(this).attr("value")=="NoValue"){
+             	$(".register").hide();
+             }
+            if($(this).attr("value")=="school"){
+                $(".register").hide();
+                $(".school").show();
+            }
+            if($(this).attr("value")=="teacher"){
+            	$(".register").hide();
+                $(".teacher").show();
+                console.log("aBout");
+                
+                $.ajax({
+                    url : "/VidyaMap/r/getSchools",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $("#schoolSelect");
+                       var nodes = data.split(",");
+                       console.log(nodes);
+                       $.each(nodes, function(item) {
+                           options.append($("<option />").val(nodes[item]).text(nodes[item]));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                });
+            }
+            if($(this).attr("value")=="student"){
+            	$(".register").hide();
+                $(".student").show();
+                
+                $.ajax({
+                    url : "/VidyaMap/r/getSchools",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $("#schoolSelect");
+                       var nodes = data.split(",");
+                       console.log(nodes);
+                       $.each(nodes, function(item) {
+                           options.append($("<option />").val(nodes[item]).text(nodes[item]));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                }); 
+            }
+            if($(this).attr("value")=="class"){
+            	$(".register").hide();
+                $(".class").show();
+                
+                $.ajax({
+                    url : "/VidyaMap/r/getTeachers",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $("#teacherSelect");
+                       var nodes = data.split(",");
+                       $.each(nodes, function(item) {
+                           options.append($("<option />").val(nodes[item]).text(nodes[item]));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                });
+            }
+            if($(this).attr("value")=="group"){
+            	$(".register").hide();
+                $(".group").show();
+                
+                $.ajax({
+                    url : "/VidyaMap/r/getClasses",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $("#classSelect");
+                       var nodes = data.split(",");
+                       $.each(nodes, function(item) {
+                    	   var name = nodes[item].split(":")[0];
+                    	   var id = nodes[item].split(":")[1];
+                           options.append($("<option />").val(id).text(name));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                });
+            }
+            if($(this).attr("value")=="term"){
+            	$(".register").hide();
+                $(".term").show();
+            }
+            if($(this).attr("value")=="groupmember"){
+            	$(".register").hide();
+                $(".groupmember").show();
+            }
+        });
+    }).change();
+});
+
+$(document).ready(function(){
+	var placeholder = null;
+	$('input[type=text]').focus(function(){
+	    placeholder = $(this).attr("placeholder");
+	    $(this).attr("placeholder","");
+	});
+	$('input[type=text]').blur(function(){
+		$(this).attr("placeholder", placeholder);
+	});
+});
+
+function match(password) {
+	if (password.value != document.getElementById('password').value) {
+	password.setCustomValidity('Password do not match');
+	} else {
+	// input is valid -- reset the error message
+	password.setCustomValidity('');
+	}
+}
+
+$('#username').change(function() {
+    console.log("Here in username");
+   $.ajax({
+      url: "/VidyaMap/r/username",
+      type: 'POST',
+      contentType : 'application/json; charset=utf-8',
+      dataType : 'json',
+      data: $('#username').val(),
+      success: function(result){
+                  console.log(result);
+                 if(result != 0){
+                     // do something if username already exist
+                     console.log("username exists");
+                     $('#username').setCustomValidity('Username already exists');
+                 }
+                 else{
+                     console.log("username can be created");
+                     $('#username').setCustomValidity('Username new');
+                     // do something if username doesn't exist
+                 }
+               }
+      });
+});

@@ -1,0 +1,194 @@
+/**
+ * signup handling
+ */
+
+$(document).ready(function(){
+    $("#mySelect").change(function(){
+        $( "select option:selected").each(function(){
+        	if($(this).attr("value")=="NoValue"){
+             	$(".register").hide();
+            }
+        	if($(this).attr("value")=="admin"){
+                $(".register").hide();
+                $(".admin").show();
+            }
+        	if($(this).attr("value")=="guest"){
+                $(".register").hide();
+                $(".guest").show();
+            }
+        	if($(this).attr("value")=="researcher"){
+                $(".register").hide();
+                $(".researcher").show();
+            }
+            if($(this).attr("value")=="school"){
+                $(".register").hide();
+                $(".school").show();
+            }
+            if($(this).attr("value")=="teacher"){
+            	$(".register").hide();
+                $(".teacher").show();
+                console.log("aBout");
+                
+                $.ajax({
+                    url : "/VidyaMap/r/getSchools",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $(".teacher #schoolSelect");
+                       options.empty();
+                       var nodes = data.split(",");
+                       console.log(nodes);
+                       $.each(nodes, function(item) {
+                    	   var name = nodes[item].split(":")[0];
+                    	   var id = nodes[item].split(":")[1];
+                           options.append($("<option />").val(id).text(name));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                });
+            }
+            if($(this).attr("value")=="student"){
+            	$(".register").hide();
+                $(".student").show();
+                
+                $.ajax({
+                    url : "/VidyaMap/r/getSchools",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $(".student #schoolSelect");
+                       options.empty();
+                       var nodes = data.split(",");
+                       console.log(nodes);
+                       $.each(nodes, function(item) {
+                    	   var name = nodes[item].split(":")[0];
+                    	   var id = nodes[item].split(":")[1];
+                           options.append($("<option />").val(id).text(name));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                }); 
+            }
+            if($(this).attr("value")=="class"){
+            	$(".register").hide();
+                $(".class").show();
+                
+                $.ajax({
+                    url : "/VidyaMap/r/getTeachers",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $("#teacherSelect");
+                       options.empty();
+                       var nodes = data.split(",");
+                       $.each(nodes, function(item) {
+                    	   var name = nodes[item].split(":")[0];
+                    	   var id = nodes[item].split(":")[1];
+                           options.append($("<option />").val(id).text(name));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                });
+            }
+            if($(this).attr("value")=="group"){
+            	$(".register").hide();
+                $(".group").show();
+                
+                $.ajax({
+                    url : "/VidyaMap/r/getClasses",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $("#classSelect");
+                       options.empty();
+                       var nodes = data.split(",");
+                       $.each(nodes, function(item) {
+                    	   var name = nodes[item].split(":")[0];
+                    	   var id = nodes[item].split(":")[1];
+                           options.append($("<option />").val(id).text(name));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                });
+
+                $.ajax({
+                    url : "/VidyaMap/r/getStudents",
+                    type : 'GET',
+                    success : function(data) {
+                       var options = $("#studentSelect");
+                       options.empty();
+                       var nodes = data.split(",");
+                       console.log(nodes);
+                       $.each(nodes, function(item) {
+                    	   var name = nodes[item].split(":")[0];
+                    	   var id = nodes[item].split(":")[1];
+                           options.append($("<option />").val(id).text(name));
+                       });
+                    },
+                    failure : function(emsg) {
+                        alert("Error:::" + emsg);
+                    }
+                });
+            }
+            if($(this).attr("value")=="term"){
+            	$(".register").hide();
+                $(".term").show();
+            }
+        });
+    }).change();
+});
+
+$(document).ready(function(){
+	
+	var placeholder = null;
+	$('input[type=text]').focus(function(){
+	    placeholder = $(this).attr("placeholder");
+	    $(this).attr("placeholder","");
+	});
+	
+	$('input[type=text]').blur(function(){
+		$(this).attr("placeholder", placeholder);
+	});
+	
+});
+
+function checkUserNameExists(object) {
+    console.log("Here in username check");
+   $.ajax({
+      url: "/VidyaMap/r/username",
+      type: 'POST',
+      contentType : 'application/json; charset=utf-8',
+      dataType : 'json',
+      data: object.value,
+      success: function(result){
+                 if(result != 0){
+                	 object.setCustomValidity('Username/Groupname already exists');
+                 }
+                 else{
+                	 object.setCustomValidity('');
+                 }
+               }
+      });
+}
+
+function match(password, who) {
+	if (password.value != $("." + who + " #password").val()) {
+	password.setCustomValidity('Password do not match');
+	} else {
+	// input is valid -- reset the error message
+	password.setCustomValidity('');
+	}
+}
+
+function addStudent(){
+    var x = document.getElementById("studentSelected");
+    var option = document.createElement("li");
+    var student = $("#studentSelect").find(":selected").text();
+    var node = document.createTextNode(student);
+    option.appendChild(node);
+    x.appendChild(option);
+}
